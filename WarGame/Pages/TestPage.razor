@@ -1,0 +1,13 @@
+﻿@page "/test"
+
+@attribute [Authorize]
+
+<h3>TestPage</h3>
+
+<AuthorizeView>
+    <p>Hello @context.User.Identity.Name!</p>
+</AuthorizeView>
+
+@code {
+
+}

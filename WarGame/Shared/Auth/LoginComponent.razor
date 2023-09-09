@@ -1,0 +1,75 @@
+﻿@inject NavigationManager NavMan
+@inject IAuthService AuthService
+@inject ILocalStorageService LocalStorage
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="@Class">
+    @if(_working)
+    {
+        <div class="d-flex justify-content-center mb-3">
+            <div class="spinner-grow text-light" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div class="d-flex justify-content-center">
+            <strong>Loading...</strong>
+        </div>
+    }
+    else
+    {
+        <EditForm Model="userModel" OnValidSubmit="@HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <div class="form-group">
+                <label for="user">Username</label>
+                <InputText name="user" class="form-control" @bind-Value="userModel.UserName"></InputText>
+                <ValidationMessage For="() => userModel.UserName"></ValidationMessage>
+            </div>
+
+            <div class="form-group my-3">
+                <label for="pass">Password</label>
+                <InputText type="password" name="pass" class="form-control" @bind-Value="userModel.Password"></InputText>
+                <ValidationMessage For="() => userModel.Password"></ValidationMessage>
+            </div>
+
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary"><span class="oi oi-account-login" aria-hidden="true"></span> Log in</button>
+                @if (_error)
+                {
+                        <span class="alert alert-danger ms-3">@errorMsg</span>
+                }
+            </div>
+        </EditForm>
+    }
+</div>
+@code {
+    [Parameter]
+    public EventCallback<Guid> OnLoggedIn { get; set; }
+
+    [Parameter]
+    public string Class { get; set; } = string.Empty;
+
+    public UserLoginDto userModel = new();
+    public bool _error, _working;
+    public string errorMsg = "";
+
+    public async Task HandleValidSubmit()
+    {
+        _error = false;
+        _working = true;
+        var res = await AuthService.LoginAsync(userModel) ?? new();
+
+        if (res != null && res.Data != null && res.Success)
+        {
+            await LocalStorage.SetItemAsync("authToken", res.Data);
+            await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            await OnLoggedIn.InvokeAsync(res.Data.Id);
+            NavMan.NavigateTo($"/");
+        }
+        else
+        {
+            errorMsg = "Wrong username and/or password!\n";
+            _error = true;
+            _working = false;
+        }
+    }
+}

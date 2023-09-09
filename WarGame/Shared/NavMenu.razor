@@ -14,6 +14,37 @@
                 <span class="oi oi-home" aria-hidden="true"></span> Home
             </NavLink>
         </div>
+        <div class="nav-item px-3">
+            <NavLink class="nav-link" href="/test" Match="NavLinkMatch.All">
+                <span class="oi oi-terminal" aria-hidden="true"></span> Test
+            </NavLink>
+        </div>
+        <AuthorizeView>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/register" Match="NavLinkMatch.All">
+                        <span class="oi oi-key" aria-hidden="true"></span> Register
+                    </NavLink>
+                </div>
+                <hr />
+                <div class="nav-item px-3 text-white">
+                    <strong class="ms-2 mb-2">Log in</strong>
+                    <LoginComponent Class="mx-2 text-white" />
+                </div>
+            </NotAuthorized>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="/profile" Match="NavLinkMatch.All">
+                        <span class="oi oi-person" aria-hidden="true"></span> Profile
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3 text-danger">
+                    <NavLink class="nav-link" href="/logout" Match="NavLinkMatch.All">
+                        <span class="oi oi-account-logout" aria-hidden="true"></span> Log out
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
     </nav>
 </div>
 

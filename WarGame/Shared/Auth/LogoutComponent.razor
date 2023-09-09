@@ -1,0 +1,18 @@
+﻿@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavMan
+
+<AuthorizeView>
+    <Authorized>
+        <button class="btn btn-outline-danger mx-3" @onclick="Logout"><span class="oi oi-account-logout"></span> Log out</button>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    private async Task Logout()
+    {
+        await LocalStorage.RemoveItemAsync("authToken");
+        await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        NavMan.NavigateTo("/", true);
+    }
+}

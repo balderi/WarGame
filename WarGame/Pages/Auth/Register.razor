@@ -1,0 +1,82 @@
+﻿@page "/register"
+
+@inject IAuthService AuthService
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavMan
+
+<PageTitle>Register new account</PageTitle>
+
+<h3>Register</h3>
+
+@if(_success)
+{
+    <h3 class="alert alert-success">Registration successful! Redirecting in 5 seconds...</h3>
+}
+
+<EditForm Model="RegisterModel" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <label for="user">Username</label>
+        <InputText name="user" class="form-control" @bind-Value="RegisterModel.UserName"></InputText>
+        <ValidationMessage For="() => RegisterModel.UserName"></ValidationMessage>
+        @if(_nameTaken)
+        {
+            <p class="alert alert-danger">Name taken</p>
+        }
+    </div>
+
+    <div class="form-group my-3">
+        <label for="pass">Password</label>
+        <InputText type="password" name="pass" class="form-control" @bind-Value="RegisterModel.Password"></InputText>
+        <ValidationMessage For="() => RegisterModel.Password"></ValidationMessage>
+    </div>
+
+    <div class="form-group my-3">
+        <label for="cpass">Confirm password</label>
+        <InputText type="password" name="cpass" class="form-control" @bind-Value="RegisterModel.PasswordConfirmed"></InputText>
+        <ValidationMessage For="() => RegisterModel.PasswordConfirmed"></ValidationMessage>
+    </div>
+
+    <div class="form-group my-3">
+        <label for="email">E-mail</label>
+        <InputText type="text" name="email" class="form-control" @bind-Value="RegisterModel.Email"></InputText>
+        <ValidationMessage For="() => RegisterModel.Password"></ValidationMessage>
+    </div>
+
+    <div class="form-group my-3">
+        <label for="cemail">Confirm e-mail</label>
+        <InputText type="text" name="cemail" class="form-control" @bind-Value="RegisterModel.EmailConfirmed"></InputText>
+        <ValidationMessage For="() => RegisterModel.PasswordConfirmed"></ValidationMessage>
+    </div>
+
+    <button type="submit" class="btn btn-primary"><span class="oi oi-person" aria-hidden="true"></span> Register</button>
+
+</EditForm>
+
+@code {
+    public UserRegisterDto RegisterModel { get; set; } = new();
+
+    bool _nameTaken, _success;
+
+    async void HandleValidSubmit()
+    {
+        _nameTaken = false;
+        _success = false;
+
+        if (await AuthService.UserExists(RegisterModel.UserName))
+        {
+            _nameTaken = true;
+        }
+        else
+        {
+            var register = await AuthService.RegisterAsync(RegisterModel);
+            if(register.Success)
+            {
+                _success = true;
+                StateHasChanged();
+                await Task.Delay(5000);
+                NavMan.NavigateTo("/");
+            }
+        }
+    }
+}

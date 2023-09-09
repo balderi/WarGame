@@ -1,6 +1,16 @@
+global using WarGame.Models.Auth;
+global using WarGame.Services;
+global using WarGame.Services.AuthService;
+global using WarGame.StateProviders;
+global using Microsoft.EntityFrameworkCore;
+global using Microsoft.AspNetCore.Components.Authorization;
+global using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using WarGame.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using Blazored.LocalStorage;
 
 namespace WarGame
 {
@@ -13,7 +23,28 @@ namespace WarGame
             // Add services to the container.
             builder.Services.AddRazorPages();
             builder.Services.AddServerSideBlazor();
-            builder.Services.AddSingleton<WeatherForecastService>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddBlazoredLocalStorage();
+            builder.Services.AddOptions();
+            builder.Services.AddAuthorizationCore();
+            builder.Services.AddScoped(sp => new HttpClient());
+            builder.Services.AddScoped<AuthenticationStateProvider, AuthStateProvider>();
+
+            builder.Services.AddDbContext<DataContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
+            });
+
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration.GetSection("AppSettings:Token").Value!)),
+                    ValidateIssuer = false,
+                    ValidateAudience = false
+                };
+            });
 
             var app = builder.Build();
 
